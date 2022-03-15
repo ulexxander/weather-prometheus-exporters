@@ -37,6 +37,11 @@ func TestCurrentWeatherData(t *testing.T) {
 	if len(mfs) != 1 {
 		t.Fatalf("expected 1 metric family, got: %d", len(mfs))
 	}
+	name := mfs[0].GetName()
+	expectedName := "open_weather_main_temp"
+	if name != expectedName {
+		t.Fatalf("expected name %s, got: %s", expectedName, name)
+	}
 
 	for _, mf := range mfs {
 		metrics := mf.GetMetric()

@@ -80,8 +80,8 @@ func NewCurrentWeatherData(
 
 	gauges := []gauge{
 		{
-			subsystem: "temp",
-			name:      "main",
+			subsystem: "main",
+			name:      "temp",
 			value:     func(res *CurrentWeatherDataResponse) float64 { return res.Main.Temp },
 		},
 	}
