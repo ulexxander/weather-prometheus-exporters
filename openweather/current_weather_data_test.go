@@ -3,6 +3,8 @@ package openweather_test
 import (
 	"log"
 	"os"
+	"reflect"
+	"sort"
 	"testing"
 	"time"
 
@@ -30,25 +32,51 @@ func TestCurrentWeatherData(t *testing.T) {
 		t.Fatalf("error updating: %v", err)
 	}
 
+	expectedMetrics := []string{
+		"open_weather_clouds_all",
+		"open_weather_main_feels_like",
+		"open_weather_main_humidity",
+		"open_weather_main_pressure",
+		"open_weather_main_temp",
+		"open_weather_main_temp_max",
+		"open_weather_main_temp_min",
+		"open_weather_wind_deg",
+		"open_weather_wind_speed",
+	}
+
 	mfs, err := reg.Gather()
 	if err != nil {
 		t.Fatalf("error gathering metrics: %v", err)
 	}
-	if len(mfs) != 1 {
-		t.Fatalf("expected 1 metric family, got: %d", len(mfs))
+
+	var gatheredMetrics []string
+	for _, mf := range mfs {
+		gatheredMetrics = append(gatheredMetrics, mf.GetName())
 	}
-	name := mfs[0].GetName()
-	expectedName := "open_weather_main_temp"
-	if name != expectedName {
-		t.Fatalf("expected name %s, got: %s", expectedName, name)
+	sort.Strings(gatheredMetrics)
+	if !reflect.DeepEqual(gatheredMetrics, expectedMetrics) {
+		t.Fatalf("expected metrics %v, got: %v", expectedMetrics, gatheredMetrics)
 	}
 
 	for _, mf := range mfs {
 		metrics := mf.GetMetric()
 		if len(metrics) != 1 {
-			t.Fatalf("expected 1 metric, got: %d", len(metrics))
+			t.Fatalf("expected 1 metric in family, got: %d", len(metrics))
 		}
-		gauge := metrics[0].GetGauge()
+		firstMetric := metrics[0]
+		labels := firstMetric.GetLabel()
+		if len(labels) != 2 {
+			t.Fatalf("expected 2 labels, got: %d", len(labels))
+		}
+		expectedLabels := []string{"id", "name"}
+		var labelNames []string
+		for _, l := range labels {
+			labelNames = append(labelNames, l.GetName())
+		}
+		if !reflect.DeepEqual(labelNames, expectedLabels) {
+			t.Fatalf("expected labels %v, got: %v", expectedLabels, labelNames)
+		}
+		gauge := firstMetric.GetGauge()
 		if *gauge.Value == 0 {
 			t.Fatalf("gauge value is zero")
 		}

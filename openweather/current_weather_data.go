@@ -79,10 +79,53 @@ func NewCurrentWeatherData(
 	labels := []string{"id", "name"}
 
 	gauges := []gauge{
+		// Main gauges.
 		{
 			subsystem: "main",
 			name:      "temp",
 			value:     func(res *CurrentWeatherDataResponse) float64 { return res.Main.Temp },
+		},
+		{
+			subsystem: "main",
+			name:      "feels_like",
+			value:     func(res *CurrentWeatherDataResponse) float64 { return res.Main.FeelsLike },
+		},
+		{
+			subsystem: "main",
+			name:      "temp_min",
+			value:     func(res *CurrentWeatherDataResponse) float64 { return res.Main.TempMin },
+		},
+		{
+			subsystem: "main",
+			name:      "temp_max",
+			value:     func(res *CurrentWeatherDataResponse) float64 { return res.Main.TempMax },
+		},
+		{
+			subsystem: "main",
+			name:      "pressure",
+			value:     func(res *CurrentWeatherDataResponse) float64 { return res.Main.Pressure },
+		},
+		{
+			subsystem: "main",
+			name:      "humidity",
+			value:     func(res *CurrentWeatherDataResponse) float64 { return res.Main.Humidity },
+		},
+		// Wind gauges.
+		{
+			subsystem: "wind",
+			name:      "speed",
+			value:     func(res *CurrentWeatherDataResponse) float64 { return res.Wind.Speed },
+		},
+		{
+			subsystem: "wind",
+			name:      "deg",
+			value:     func(res *CurrentWeatherDataResponse) float64 { return res.Wind.Deg },
+		},
+		// Clouds gauges.
+		{
+			subsystem: "clouds",
+			name:      "all",
+			value:     func(res *CurrentWeatherDataResponse) float64 { return res.Clouds.All },
 		},
 	}
 
