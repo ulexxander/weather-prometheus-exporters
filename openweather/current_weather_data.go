@@ -161,15 +161,21 @@ func (cwd *CurrentWeatherData) Collect(m chan<- prometheus.Metric) {
 }
 
 func (cwd *CurrentWeatherData) Run(ctx context.Context) error {
+	cwd.updateLog()
+
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-time.After(cwd.interval):
-			if err := cwd.Update(); err != nil {
-				cwd.log.Println("Error updating current weather data:", err)
-			}
+			cwd.updateLog()
 		}
+	}
+}
+
+func (cwd *CurrentWeatherData) updateLog() {
+	if err := cwd.Update(); err != nil {
+		cwd.log.Println("Error updating current weather data:", err)
 	}
 }
 
@@ -178,10 +184,15 @@ func (cwd *CurrentWeatherData) Update() error {
 	query.Set("lat", fmt.Sprint(cwd.lat))
 	query.Set("lon", fmt.Sprint(cwd.lon))
 
+	start := time.Now()
+
 	var res CurrentWeatherDataResponse
 	if err := cwd.client.Request("/weather", query, &res); err != nil {
 		return fmt.Errorf("requesting /weather: %w", err)
 	}
+
+	duration := time.Since(start)
+	cwd.log.Printf("Fetched Current weather data successfully, took %s", duration)
 
 	labels := prometheus.Labels{
 		"id":   strconv.Itoa(res.ID),
