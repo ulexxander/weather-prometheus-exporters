@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 10s
+
+scrape_configs:
+  - job_name: "open_weather"
+    static_configs:
+      - targets: ["open-weather"]

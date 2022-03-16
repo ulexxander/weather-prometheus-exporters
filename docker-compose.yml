@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  open-weather:
+    image: open-weather-prometheus-exporter
+    command: 
+      - "-app-id=$OPEN_WEATHER_APP_ID"
+      - "-coords=[{\"lat\":46.2389,\"lon\":14.3556}]"
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
