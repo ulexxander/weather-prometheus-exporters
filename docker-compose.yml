@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   open-weather:
-    image: open-weather-prometheus-exporter
+    image: ulexxander/open-weather-prometheus-exporter
     command: 
       - "-app-id=$OPEN_WEATHER_APP_ID"
       - "-coords=[{\"lat\":46.2389,\"lon\":14.3556}]"
