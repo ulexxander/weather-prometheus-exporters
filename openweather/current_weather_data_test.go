@@ -13,15 +13,23 @@ import (
 )
 
 func TestCurrentWeatherData(t *testing.T) {
-	appID, ok := os.LookupEnv("OPEN_WEATHER_APP_ID")
-	if !ok {
+	appID := os.Getenv("OPEN_WEATHER_APP_ID")
+	if appID == "" {
 		t.Fatalf("OPEN_WEATHER_APP_ID env variable must be set")
 	}
 
 	client := openweather.NewClient(appID)
-	kranjLat, kranjLon := 46.2389, 14.3556
-	interval := time.Millisecond * 100
-	cwd := openweather.NewCurrentWeatherData(client, kranjLat, kranjLon, interval, log.Default())
+	config := &openweather.CurrentWeatherDataConfig{
+		Coords: []openweather.Coordinates{
+			// Kranj.
+			{
+				Lat: 46.2389,
+				Lon: 14.3556,
+			},
+		},
+		Interval: openweather.Duration(time.Millisecond * 100),
+	}
+	cwd := openweather.NewCurrentWeatherData(client, config, log.Default())
 
 	reg := prometheus.NewRegistry()
 	if err := reg.Register(cwd); err != nil {
@@ -61,12 +69,12 @@ func TestCurrentWeatherData(t *testing.T) {
 	for _, mf := range mfs {
 		metrics := mf.GetMetric()
 		if len(metrics) != 1 {
-			t.Fatalf("expected 1 metric in family, got: %d", len(metrics))
+			t.Fatalf("%s: expected 1 metric in family, got: %d", mf.GetName(), len(metrics))
 		}
 		firstMetric := metrics[0]
 		labels := firstMetric.GetLabel()
 		if len(labels) != 2 {
-			t.Fatalf("expected 2 labels, got: %d", len(labels))
+			t.Fatalf("%s: expected 2 labels, got: %d", mf.GetName(), len(labels))
 		}
 		expectedLabels := []string{"id", "name"}
 		var labelNames []string
@@ -74,11 +82,11 @@ func TestCurrentWeatherData(t *testing.T) {
 			labelNames = append(labelNames, l.GetName())
 		}
 		if !reflect.DeepEqual(labelNames, expectedLabels) {
-			t.Fatalf("expected labels %v, got: %v", expectedLabels, labelNames)
+			t.Fatalf("%s: expected labels %v, got: %v", mf.GetName(), expectedLabels, labelNames)
 		}
 		gauge := firstMetric.GetGauge()
-		if *gauge.Value == 0 {
-			t.Fatalf("gauge value is zero")
+		if gauge.Value == nil {
+			t.Fatalf("%s: gauge value is nil", mf.GetName())
 		}
 	}
 }

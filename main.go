@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -17,10 +16,8 @@ import (
 )
 
 var (
-	flagAddr     = flag.String("addr", ":80", "Address to serve HTTP metrics on")
-	flagAppID    = flag.String("app-id", "", "OpenWeather API application ID")
-	flagCoords   = flag.String("coords", "", `Coordinates as JSON array with objects {"lat":123,"lon":123}`)
-	flagInterval = flag.Duration("interval", time.Minute, "Interval how often data will be fetched and updated.")
+	flagAddr   = flag.String("addr", ":80", "Address to serve HTTP metrics on")
+	flagConfig = flag.String("config", "./config.json", "Config file location")
 )
 
 func main() {
@@ -30,49 +27,39 @@ func main() {
 	}
 }
 
-type coord struct {
-	Lat float64 `json:"lat"`
-	Lon float64 `json:"lon"`
-}
-
 func run(log *log.Logger) error {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
 	flag.Parse()
-	if *flagAppID == "" {
-		return fmt.Errorf("flag app-id is missing")
-	}
-	if *flagCoords == "" {
-		return fmt.Errorf("flag coords is missing")
+	appID := os.Getenv("OPEN_WEATHER_APP_ID")
+	if appID == "" {
+		return fmt.Errorf("OPEN_WEATHER_APP_ID env variable must be set")
 	}
 
-	var coords []coord
-	if err := json.Unmarshal([]byte(*flagCoords), &coords); err != nil {
-		return fmt.Errorf("unmarshaling coordinates: %w", err)
+	log.Println("Reading config file from", *flagConfig)
+
+	configJSON, err := os.ReadFile(*flagConfig)
+	if err != nil {
+		return fmt.Errorf("reading config file: %w", err)
 	}
-	if len(coords) == 0 {
-		return fmt.Errorf("no coordinates specified")
+	var config openweather.Config
+	if err := json.Unmarshal(configJSON, &config); err != nil {
+		return fmt.Errorf("unmarshaling config: %w", err)
 	}
 
-	log.Println("Starting OpenWeather Prometheus Exporter")
+	client := openweather.NewClient(appID)
 
-	client := openweather.NewClient(*flagAppID)
-
-	jobErrors := make(chan error, len(coords))
-
-	for _, c := range coords {
-		go func(c coord) {
-			cwd := openweather.NewCurrentWeatherData(client, c.Lat, c.Lon, *flagInterval, log)
-			if err := prometheus.Register(cwd); err != nil {
-				jobErrors <- fmt.Errorf("registering collector: %w", err)
-				return
-			}
-
-			log.Printf("Starting update job for lat=%f lon=%f", c.Lat, c.Lon)
-			jobErrors <- cwd.Run(ctx)
-		}(c)
+	cwd := openweather.NewCurrentWeatherData(client, &config.CurrentWeatherData, log)
+	if err := prometheus.Register(cwd); err != nil {
+		return fmt.Errorf("registering current weather data collector: %w", err)
 	}
+
+	cwdErr := make(chan error)
+	go func() {
+		log.Print("Starting current weather data update job")
+		cwdErr <- cwd.Run(ctx)
+	}()
 
 	httpErr := make(chan error)
 	go func() {
@@ -83,9 +70,9 @@ func run(log *log.Logger) error {
 	}()
 
 	select {
+	case err := <-cwdErr:
+		return fmt.Errorf("current weather data: %w", err)
 	case err := <-httpErr:
-		return fmt.Errorf("listening HTTP: %w", err)
-	case err := <-jobErrors:
-		return fmt.Errorf("job errors: %w", err)
+		return fmt.Errorf("HTTP server: %w", err)
 	}
 }

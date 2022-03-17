@@ -11,8 +11,11 @@ Supported APIs:
 ## Getting started
 
 ```sh
-# Run exporter in Docker container with port forwarded to 4000.
-docker run --rm -it -p 4000:80 ulexxander/open-weather-prometheus-exporter -app-id=<your-app-id> -coords='[{"lat":46.2389,"lon":14.3556}]'
+# Set credentials.
+export OPEN_WEATHER_APP_ID=<your-app-id>
+
+# Run exporter in Docker container with config.json mounted and port forwarded to 4000.
+docker run --rm -it -p 4000:80 --env=OPEN_WEATHER_APP_ID -v="$PWD/config.json:/open-weather-prometheus-exporter/config.json" ulexxander/open-weather-prometheus-exporter
 
 # Fetch exported metrics.
 curl localhost:4000
@@ -35,14 +38,12 @@ Import [grafana-dashboard.json](grafana-dashboard.json) into Grafana to get pre-
 ## Development
 
 ```sh
-# Export credentials for tests.
+# Set credentials.
 export OPEN_WEATHER_APP_ID=<your-app-id>
 
 # Run tests.
 go test -v ./openweather
-```
 
-```sh
 # Run locally on port 4000.
-go run ./main.go -app-id=$OPEN_WEATHER_APP_ID -coords='[{"lat":46.2389,"lon":14.3556}]' -addr=:4000 -interval=5s
+go run ./main.go -addr=:4000
 ```

@@ -61,18 +61,15 @@ type gauge struct {
 }
 
 type CurrentWeatherData struct {
-	client   *Client
-	lat      float64
-	lon      float64
-	interval time.Duration
-	log      *log.Logger
-	gauges   []gauge
+	client *Client
+	config *CurrentWeatherDataConfig
+	log    *log.Logger
+	gauges []gauge
 }
 
 func NewCurrentWeatherData(
 	client *Client,
-	lat, lon float64,
-	interval time.Duration,
+	config *CurrentWeatherDataConfig,
 	log *log.Logger,
 ) *CurrentWeatherData {
 	const namespace = "open_weather"
@@ -139,12 +136,10 @@ func NewCurrentWeatherData(
 	}
 
 	return &CurrentWeatherData{
-		client:   client,
-		interval: interval,
-		lat:      lat,
-		lon:      lon,
-		log:      log,
-		gauges:   gauges,
+		client: client,
+		config: config,
+		log:    log,
+		gauges: gauges,
 	}
 }
 
@@ -167,7 +162,7 @@ func (cwd *CurrentWeatherData) Run(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case <-time.After(cwd.interval):
+		case <-time.After(time.Duration(cwd.config.Interval)):
 			cwd.updateLog()
 		}
 	}
@@ -180,29 +175,56 @@ func (cwd *CurrentWeatherData) updateLog() {
 }
 
 func (cwd *CurrentWeatherData) Update() error {
-	query := url.Values{}
-	query.Set("lat", fmt.Sprint(cwd.lat))
-	query.Set("lon", fmt.Sprint(cwd.lon))
+	type result struct {
+		res *CurrentWeatherDataResponse
+		err error
+	}
 
+	results := make(chan result, len(cwd.config.Coords))
 	start := time.Now()
 
-	var res CurrentWeatherDataResponse
-	if err := cwd.client.Request("/weather", query, &res); err != nil {
-		return fmt.Errorf("requesting /weather: %w", err)
+	for _, coords := range cwd.config.Coords {
+		go func(coords Coordinates) {
+			res, err := cwd.requestSingle(coords)
+			results <- result{res, err}
+		}(coords)
+	}
+
+	for i := 0; i < len(cwd.config.Coords); i++ {
+		result := <-results
+		if result.err != nil {
+			cwd.log.Println("Error fetching current weather data:", result.err)
+			continue
+		}
+
+		labels := prometheus.Labels{
+			"id":   strconv.Itoa(result.res.ID),
+			"name": result.res.Name,
+		}
+
+		for _, g := range cwd.gauges {
+			val := g.value(result.res)
+			g.collector.With(labels).Set(val)
+		}
+
+		cwd.log.Println("Processed current weather data of", result.res.Name)
 	}
 
 	duration := time.Since(start)
-	cwd.log.Printf("Fetched Current weather data successfully, took %s", duration)
-
-	labels := prometheus.Labels{
-		"id":   strconv.Itoa(res.ID),
-		"name": res.Name,
-	}
-
-	for _, g := range cwd.gauges {
-		val := g.value(&res)
-		g.collector.With(labels).Set(val)
-	}
+	cwd.log.Println("Updated current weather data successfully, took", duration)
 
 	return nil
+}
+
+func (cwd *CurrentWeatherData) requestSingle(coords Coordinates) (*CurrentWeatherDataResponse, error) {
+	query := url.Values{}
+	query.Set("lat", fmt.Sprint(coords.Lat))
+	query.Set("lon", fmt.Sprint(coords.Lon))
+
+	var res CurrentWeatherDataResponse
+	if err := cwd.client.Request("/weather", query, &res); err != nil {
+		return nil, fmt.Errorf("requesting /weather: %w", err)
+	}
+
+	return &res, nil
 }
