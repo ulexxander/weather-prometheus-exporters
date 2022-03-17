@@ -64,9 +64,7 @@ func run(log *log.Logger) error {
 	httpErr := make(chan error)
 	go func() {
 		log.Println("Starting HTTP server on", *flagAddr)
-		if err := http.ListenAndServe(*flagAddr, promhttp.Handler()); err != nil {
-			httpErr <- err
-		}
+		httpErr <- http.ListenAndServe(*flagAddr, promhttp.Handler())
 	}()
 
 	select {
