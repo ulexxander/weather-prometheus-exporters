@@ -1,5 +1,7 @@
 # Open Weather Prometheus Exporter
 
+[Docker Hub](https://hub.docker.com/r/ulexxander/open-weather-prometheus-exporter)
+
 Export OpenWeather data into Prometheus.
 
 Supported APIs:
