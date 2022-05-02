@@ -9,9 +9,13 @@ Supported APIs:
 - [Netatmo Stations Data](https://openweathermap.org/current)
 - [OpenWeather Current Weather Data](https://dev.netatmo.com/apidocumentation/weather#getstationsdata)
 
-![Grafana Dashboard Netatmo](./grafana-dashboard-netatmo.png)
+Netatmo Grafana dashboard:
 
-![Grafana Dashboard OpenWeather](./grafana-dashboard-open-weather.png)
+![Netatmo Grafana dashboard](./grafana-dashboard-netatmo.png)
+
+OpenWeather Grafana dashboard:
+
+![OpenWeather Grafana dashboard](./grafana-dashboard-open-weather.png)
 
 ## Getting started
 
