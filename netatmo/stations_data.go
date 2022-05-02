@@ -1,14 +1,17 @@
 package netatmo
 
 import (
+	"context"
 	"log"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/ulexxander/open-weather-prometheus-exporter/config"
 )
 
 type StationsData struct {
 	client              *Client
+	config              *config.NetatmoStationsData
 	log                 *log.Logger
 	indoorModuleGauges  []indoorModuleGauge
 	outdoorModuleGauges []outdoorModuleGauge
@@ -33,7 +36,7 @@ type windModuleGauge struct {
 	collector *prometheus.GaugeVec
 }
 
-func NewStationsData(client *Client, log *log.Logger) *StationsData {
+func NewStationsData(client *Client, config *config.NetatmoStationsData, log *log.Logger) *StationsData {
 	const namespace = "netatmo"
 	stationLabels := []string{"home_id", "home_name", "id", "type", "station_name"}
 	moduleLabels := []string{"home_id", "home_name", "id", "type", "module_name"}
@@ -124,6 +127,7 @@ func NewStationsData(client *Client, log *log.Logger) *StationsData {
 
 	return &StationsData{
 		client:              client,
+		config:              config,
 		log:                 log,
 		indoorModuleGauges:  indoorModuleGauges,
 		outdoorModuleGauges: outdoorModuleGauges,
@@ -153,6 +157,19 @@ func (sd *StationsData) Collect(m chan<- prometheus.Metric) {
 	sd.forEach(func(c prometheus.Collector) {
 		c.Collect(m)
 	})
+}
+
+func (sd *StationsData) Run(ctx context.Context) {
+	sd.Update()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(time.Duration(sd.config.Interval)):
+			sd.Update()
+		}
+	}
 }
 
 func (sd *StationsData) Update() {

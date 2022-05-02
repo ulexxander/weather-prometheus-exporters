@@ -6,14 +6,16 @@ import (
 )
 
 type Config struct {
+	Netatmo     Netatmo
 	OpenWeather OpenWeather
 }
 
 type Netatmo struct {
-	CurrentWeatherData OpenWeatherCurrentWeatherData
+	StationsData NetatmoStationsData
 }
 
 type NetatmoStationsData struct {
+	Enabled  bool
 	Interval Duration
 }
 
@@ -22,6 +24,7 @@ type OpenWeather struct {
 }
 
 type OpenWeatherCurrentWeatherData struct {
+	Enabled  bool
 	Coords   []Coordinates
 	Interval Duration
 }

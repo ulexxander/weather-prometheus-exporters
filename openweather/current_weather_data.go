@@ -112,13 +112,13 @@ func (cwd *CurrentWeatherData) Collect(m chan<- prometheus.Metric) {
 	}
 }
 
-func (cwd *CurrentWeatherData) Run(ctx context.Context) error {
+func (cwd *CurrentWeatherData) Run(ctx context.Context) {
 	cwd.Update()
 
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return
 		case <-time.After(time.Duration(cwd.config.Interval)):
 			cwd.Update()
 		}
@@ -136,7 +136,7 @@ func (cwd *CurrentWeatherData) Update() {
 
 	for _, coords := range cwd.config.Coords {
 		go func(coords config.Coordinates) {
-			res, err := cwd.client.CurrentWeatherData(coords)
+			res, err := cwd.client.CurrentWeatherData(coords.Lat, coords.Lon)
 			results <- result{res, err}
 		}(coords)
 	}
@@ -144,7 +144,7 @@ func (cwd *CurrentWeatherData) Update() {
 	for i := 0; i < len(cwd.config.Coords); i++ {
 		result := <-results
 		if result.err != nil {
-			cwd.log.Println("Error fetching current weather data:", result.err)
+			cwd.log.Println("Error fetching Current Weather Data:", result.err)
 			continue
 		}
 
@@ -158,9 +158,9 @@ func (cwd *CurrentWeatherData) Update() {
 			g.collector.With(labels).Set(val)
 		}
 
-		cwd.log.Printf("Processed current weather data of %s (%d)", result.res.Name, result.res.ID)
+		cwd.log.Printf("Processed Current Weather Data of %s (%d)", result.res.Name, result.res.ID)
 	}
 
 	duration := time.Since(start)
-	cwd.log.Println("Updated current weather data successfully, took", duration)
+	cwd.log.Println("Updated Current Weather Data successfully, took", duration)
 }

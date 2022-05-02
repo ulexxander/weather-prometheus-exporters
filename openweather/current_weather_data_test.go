@@ -30,7 +30,6 @@ func TestCurrentWeatherData(t *testing.T) {
 				Lon: 14.3556,
 			},
 		},
-		Interval: config.Duration(time.Millisecond * 100),
 	}
 	cwd := openweather.NewCurrentWeatherData(client, config, log.Default())
 

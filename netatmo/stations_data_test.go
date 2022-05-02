@@ -9,6 +9,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/stretchr/testify/require"
+	"github.com/ulexxander/open-weather-prometheus-exporter/config"
 	"github.com/ulexxander/open-weather-prometheus-exporter/netatmo"
 	"github.com/ulexxander/open-weather-prometheus-exporter/testutil"
 )
@@ -21,7 +22,7 @@ func TestStationsData(t *testing.T) {
 	client := netatmo.NewClient(oauth)
 	client.URL = server.URL
 
-	stationsData := netatmo.NewStationsData(client, log.Default())
+	stationsData := netatmo.NewStationsData(client, &config.NetatmoStationsData{}, log.Default())
 
 	reg := prometheus.NewRegistry()
 	err := reg.Register(stationsData)

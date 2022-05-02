@@ -1,11 +1,13 @@
 {
   "Netatmo": {
     "StationsData": {
+      "Enabled": true,
       "Interval": "5s"
     }
   },
   "OpenWeather": {
     "CurrentWeatherData": {
+      "Enabled": true,
       "Coords": [
         { "Lat": 46.05108, "Lon": 14.50513 },
         { "Lat": 46.55472, "Lon": 15.64667 },
