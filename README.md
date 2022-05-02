@@ -55,7 +55,7 @@ Import [grafana-dashboard.json](grafana-dashboard.json) into Grafana to get pre-
 
 ```sh
 # Run tests.
-go test -v ./openweather
+go test -v ./...
 
 # Run locally on port 4000.
 # Load environment variables from .env file (optional).
