@@ -9,7 +9,9 @@ Supported APIs:
 - [Netatmo Stations Data](https://openweathermap.org/current)
 - [OpenWeather Current Weather Data](https://dev.netatmo.com/apidocumentation/weather#getstationsdata)
 
-![Grafana Dashboard](./grafana-dashboard.png)
+![Grafana Dashboard Netatmo](./grafana-dashboard-netatmo.png)
+
+![Grafana Dashboard OpenWeather](./grafana-dashboard-open-weather.png)
 
 ## Getting started
 
@@ -49,7 +51,7 @@ curl localhost:4000
 
 Refer to [docker-compose.yml](./docker-compose.yml) and [prometheus.yml](./prometheus.yml) for setup with Grafana and Prometheus.
 
-Import [grafana-dashboard.json](grafana-dashboard.json) into Grafana to get pre-built dashboard from the screenshot.
+Import [grafana-dashboard-netatmo.json](grafana-dashboard-netatmo.json) and [grafana-dashboard-open-weather.json](grafana-dashboard-open-weather.json) into Grafana to get pre-built dashboards from screenshots.
 
 ## Development
 

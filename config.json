@@ -8,7 +8,7 @@
   "OpenWeather": {
     "CurrentWeatherData": {
       "Enabled": true,
-      "Coords": [{ "Lat": 46.05108, "Lon": 14.50513 }],
+      "Coords": [{ "Lat": 46.23887, "Lon": 14.35561 }],
       "Interval": "5s"
     }
   }
