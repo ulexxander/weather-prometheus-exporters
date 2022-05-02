@@ -22,12 +22,26 @@ func NewClient(appID string) *Client {
 	}
 }
 
+type ErrorResponse struct {
+	Cod     int    `json:"cod"`
+	Message string `json:"message"`
+}
+
+func (e *ErrorResponse) Error() string {
+	return fmt.Sprintf("openweather: cod=%d message=%s", e.Cod, e.Message)
+}
+
+func (e *ErrorResponse) OK() bool {
+	return e.Message == ""
+}
+
 type Coordinates struct {
 	Lon float64
 	Lat float64
 }
 
 type CurrentWeatherDataResponse struct {
+	ErrorResponse
 	Coord struct {
 		Lon float64 `json:"lon"`
 		Lat float64 `json:"lat"`
@@ -66,7 +80,6 @@ type CurrentWeatherDataResponse struct {
 	Timezone int    `json:"timezone"`
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
-	Cod      int    `json:"cod"`
 }
 
 func (c *Client) CurrentWeatherData(coords Coordinates) (*CurrentWeatherDataResponse, error) {
@@ -77,6 +90,10 @@ func (c *Client) CurrentWeatherData(coords Coordinates) (*CurrentWeatherDataResp
 	var res CurrentWeatherDataResponse
 	if err := c.Request("/weather", query, &res); err != nil {
 		return nil, fmt.Errorf("requesting /weather: %w", err)
+	}
+
+	if !res.OK() {
+		return nil, &res.ErrorResponse
 	}
 
 	return &res, nil

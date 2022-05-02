@@ -24,7 +24,6 @@ func TestCurrentWeatherData(t *testing.T) {
 
 	config := &openweather.CurrentWeatherDataConfig{
 		Coords: []openweather.Coordinates{
-			// Kranj:
 			{
 				Lat: 46.2389,
 				Lon: 14.3556,
