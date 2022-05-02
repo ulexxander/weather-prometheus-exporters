@@ -2,26 +2,29 @@ package openweather_test
 
 import (
 	"log"
-	"os"
-	"sort"
+	"net/http/httptest"
 	"testing"
 	"time"
+
+	dto "github.com/prometheus/client_model/go"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 	"github.com/ulexxander/open-weather-prometheus-exporter/openweather"
+	"github.com/ulexxander/open-weather-prometheus-exporter/testutil"
 )
 
 func TestCurrentWeatherData(t *testing.T) {
-	appID := os.Getenv("OPEN_WEATHER_APP_ID")
-	if appID == "" {
-		require.Fail(t, "OPEN_WEATHER_APP_ID env variable must be set")
-	}
+	handler := testutil.NewHTTPHandler()
+	server := httptest.NewServer(handler)
+	defer server.Close()
 
-	client := openweather.NewClient(appID)
+	client := openweather.NewClient("my-app-id")
+	client.URL = server.URL
+
 	config := &openweather.CurrentWeatherDataConfig{
 		Coords: []openweather.Coordinates{
-			// Kranj.
+			// Kranj:
 			{
 				Lat: 46.2389,
 				Lon: 14.3556,
@@ -35,46 +38,93 @@ func TestCurrentWeatherData(t *testing.T) {
 	err := reg.Register(cwd)
 	require.NoError(t, err)
 
-	cwd.Update()
+	updated := make(chan struct{})
+	go func() {
+		cwd.Update()
+		updated <- struct{}{}
+	}()
 
-	expectedMetrics := []string{
-		"open_weather_clouds_all",
-		"open_weather_main_feels_like",
-		"open_weather_main_humidity",
-		"open_weather_main_pressure",
-		"open_weather_main_temp",
-		"open_weather_main_temp_max",
-		"open_weather_main_temp_min",
-		"open_weather_wind_deg",
-		"open_weather_wind_speed",
+	select {
+	case <-handler.Requests:
+		handler.Responses <- []byte(response)
+	case <-time.After(time.Second):
+		require.Fail(t, "request did not arrived")
 	}
 
-	mfs, err := reg.Gather()
+	<-updated
+
+	gatheredMetrics, err := reg.Gather()
 	require.NoError(t, err)
 
-	var gatheredMetrics []string
-	for _, mf := range mfs {
-		gatheredMetrics = append(gatheredMetrics, mf.GetName())
-	}
-	sort.Strings(gatheredMetrics)
-	require.Equal(t, expectedMetrics, gatheredMetrics)
+	sptr := func(s string) *string { return &s }
+	fptr := func(f float64) *float64 { return &f }
 
-	for _, mf := range mfs {
-		metrics := mf.GetMetric()
-		require.Len(t, metrics, 1)
-
-		firstMetric := metrics[0]
-		labels := firstMetric.GetLabel()
-		require.Len(t, labels, 2)
-
-		expectedLabels := []string{"id", "name"}
-		var labelNames []string
-		for _, l := range labels {
-			labelNames = append(labelNames, l.GetName())
+	metric := func(name string, value float64) *dto.MetricFamily {
+		return &dto.MetricFamily{
+			Name: sptr("open_weather_" + name),
+			Type: dto.MetricType_GAUGE.Enum(),
+			Help: sptr(""),
+			Metric: []*dto.Metric{
+				{
+					Label: []*dto.LabelPair{
+						{Name: sptr("id"), Value: sptr("3197378")},
+						{Name: sptr("name"), Value: sptr("Kranj")},
+					},
+					Gauge: &dto.Gauge{
+						Value: fptr(value),
+					},
+				},
+			},
 		}
-		require.Equal(t, expectedLabels, labelNames)
-
-		gauge := firstMetric.GetGauge()
-		require.NotNil(t, gauge.Value)
 	}
+
+	expectedMetrics := []*dto.MetricFamily{
+		metric("clouds_all", 75),
+		metric("main_feels_like", 287.29),
+		metric("main_humidity", 72),
+		metric("main_pressure", 1015),
+		metric("main_temp", 287.88),
+		metric("main_temp_max", 289.04),
+		metric("main_temp_min", 284.16),
+		metric("wind_deg", 290),
+		metric("wind_speed", 3.6),
+	}
+
+	require.Equal(t, expectedMetrics, gatheredMetrics)
 }
+
+const response = `{
+  "coord": { "lon": 14.3556, "lat": 46.2389 },
+  "weather": [
+    {
+      "id": 803,
+      "main": "Clouds",
+      "description": "broken clouds",
+      "icon": "04d"
+    }
+  ],
+  "base": "stations",
+  "main": {
+    "temp": 287.88,
+    "feels_like": 287.29,
+    "temp_min": 284.16,
+    "temp_max": 289.04,
+    "pressure": 1015,
+    "humidity": 72
+  },
+  "visibility": 10000,
+  "wind": { "speed": 3.6, "deg": 290 },
+  "clouds": { "all": 75 },
+  "dt": 1651487420,
+  "sys": {
+    "type": 1,
+    "id": 6815,
+    "country": "SI",
+    "sunrise": 1651463259,
+    "sunset": 1651515081
+  },
+  "timezone": 7200,
+  "id": 3197378,
+  "name": "Kranj",
+  "cod": 200
+}`

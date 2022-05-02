@@ -157,7 +157,7 @@ func (cwd *CurrentWeatherData) Update() {
 			g.collector.With(labels).Set(val)
 		}
 
-		cwd.log.Println("Processed current weather data of", result.res.Name)
+		cwd.log.Printf("Processed current weather data of %s (%d)", result.res.Name, result.res.ID)
 	}
 
 	duration := time.Since(start)
