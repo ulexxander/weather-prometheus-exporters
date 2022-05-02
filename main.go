@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/ulexxander/open-weather-prometheus-exporter/config"
@@ -20,8 +21,9 @@ import (
 )
 
 var (
-	flagAddr   = flag.String("addr", ":80", "Address to serve HTTP metrics on")
-	flagConfig = flag.String("config", "./config.json", "Config file location")
+	flagAddr    = flag.String("addr", ":80", "Address to serve HTTP metrics on")
+	flagConfig  = flag.String("config", "./config.json", "Config file location")
+	flagEnvFile = flag.String("env-file", "", "Environment variables file to load")
 )
 
 func main() {
@@ -37,6 +39,13 @@ func run(log *log.Logger) error {
 
 	log.Print("Parsing flags")
 	flag.Parse()
+
+	if *flagEnvFile != "" {
+		log.Println("Loading environment variables from", *flagEnvFile)
+		if err := godotenv.Load(*flagEnvFile); err != nil {
+			return fmt.Errorf("loading .env file: %w", err)
+		}
+	}
 
 	log.Println("Reading config file from", *flagConfig)
 	configJSON, err := os.ReadFile(*flagConfig)
