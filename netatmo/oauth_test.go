@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/ulexxander/open-weather-prometheus-exporter/netatmo"
-	"github.com/ulexxander/open-weather-prometheus-exporter/testutil"
+	"github.com/ulexxander/weather-prometheus-exporters/netatmo"
+	"github.com/ulexxander/weather-prometheus-exporters/testutil"
 )
 
 func TestOAuth(t *testing.T) {

@@ -1,8 +1,8 @@
 
-DOCKER_REPO="ulexxander/open-weather-prometheus-exporter"
+DOCKER_REPO="ulexxander/weather-prometheus-exporters"
 GIT_TAG=$(git describe --tags)
-IMAGE_TAG="$DOCKER_REPO:$GIT_TAG"
-LATEST_TAG="$DOCKER_REPO:latest"
+IMAGE_TAG="${DOCKER_REPO}:${GIT_TAG}"
+LATEST_TAG="${DOCKER_REPO}:latest"
 
 build() {
   docker build -t $IMAGE_TAG .

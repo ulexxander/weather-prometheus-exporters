@@ -1,5 +1,8 @@
 *
+!config/
+!netatmo/
 !openweather/
+!testutil/
 !go.mod
 !go.sum
 !main.go

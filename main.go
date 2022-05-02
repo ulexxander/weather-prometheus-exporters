@@ -15,15 +15,15 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/ulexxander/open-weather-prometheus-exporter/config"
-	"github.com/ulexxander/open-weather-prometheus-exporter/netatmo"
-	"github.com/ulexxander/open-weather-prometheus-exporter/openweather"
+	"github.com/ulexxander/weather-prometheus-exporters/config"
+	"github.com/ulexxander/weather-prometheus-exporters/netatmo"
+	"github.com/ulexxander/weather-prometheus-exporters/openweather"
 )
 
 var (
 	flagAddr    = flag.String("addr", ":80", "Address to serve HTTP metrics on")
 	flagConfig  = flag.String("config", "./config.json", "Config file location")
-	flagEnvFile = flag.String("env-file", "", "Environment variables file to load")
+	flagEnvFile = flag.String("env-file", "", "Environment variables file to load (dotenv)")
 )
 
 func main() {

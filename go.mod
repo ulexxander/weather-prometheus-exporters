@@ -1,4 +1,4 @@
-module github.com/ulexxander/open-weather-prometheus-exporter
+module github.com/ulexxander/weather-prometheus-exporters
 
 go 1.17
 

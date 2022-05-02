@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/ulexxander/open-weather-prometheus-exporter/openweather"
-	"github.com/ulexxander/open-weather-prometheus-exporter/testutil"
+	"github.com/ulexxander/weather-prometheus-exporters/openweather"
+	"github.com/ulexxander/weather-prometheus-exporters/testutil"
 )
 
 func TestClient_Error(t *testing.T) {

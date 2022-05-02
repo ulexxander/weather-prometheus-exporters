@@ -9,9 +9,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 	"github.com/stretchr/testify/require"
-	"github.com/ulexxander/open-weather-prometheus-exporter/config"
-	"github.com/ulexxander/open-weather-prometheus-exporter/netatmo"
-	"github.com/ulexxander/open-weather-prometheus-exporter/testutil"
+	"github.com/ulexxander/weather-prometheus-exporters/config"
+	"github.com/ulexxander/weather-prometheus-exporters/netatmo"
+	"github.com/ulexxander/weather-prometheus-exporters/testutil"
 )
 
 func TestStationsData(t *testing.T) {

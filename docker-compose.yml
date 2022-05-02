@@ -2,11 +2,10 @@ version: "3.9"
 
 services:
   open-weather:
-    image: ulexxander/open-weather-prometheus-exporter
+    image: ulexxander/weather-prometheus-exporters
     volumes:
-      - "./config.json:/open-weather-prometheus-exporter/config.json"
-    environment:
-      - "OPEN_WEATHER_APP_ID=$OPEN_WEATHER_APP_ID"
+      - "./config.json:/weather-prometheus-exporters/config.json"
+    env_file: .env
 
   prometheus:
     image: prom/prometheus

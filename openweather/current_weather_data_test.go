@@ -10,9 +10,9 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
-	"github.com/ulexxander/open-weather-prometheus-exporter/config"
-	"github.com/ulexxander/open-weather-prometheus-exporter/openweather"
-	"github.com/ulexxander/open-weather-prometheus-exporter/testutil"
+	"github.com/ulexxander/weather-prometheus-exporters/config"
+	"github.com/ulexxander/weather-prometheus-exporters/openweather"
+	"github.com/ulexxander/weather-prometheus-exporters/testutil"
 )
 
 func TestCurrentWeatherData(t *testing.T) {

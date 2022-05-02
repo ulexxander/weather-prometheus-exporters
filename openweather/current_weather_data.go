@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/ulexxander/open-weather-prometheus-exporter/config"
+	"github.com/ulexxander/weather-prometheus-exporters/config"
 )
 
 type gauge struct {
