@@ -10,6 +10,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
+	"github.com/ulexxander/open-weather-prometheus-exporter/config"
 	"github.com/ulexxander/open-weather-prometheus-exporter/openweather"
 	"github.com/ulexxander/open-weather-prometheus-exporter/testutil"
 )
@@ -22,14 +23,14 @@ func TestCurrentWeatherData(t *testing.T) {
 	client := openweather.NewClient("my-app-id")
 	client.URL = server.URL
 
-	config := &openweather.CurrentWeatherDataConfig{
-		Coords: []openweather.Coordinates{
+	config := &config.OpenWeatherCurrentWeatherData{
+		Coords: []config.Coordinates{
 			{
 				Lat: 46.2389,
 				Lon: 14.3556,
 			},
 		},
-		Interval: openweather.Duration(time.Millisecond * 100),
+		Interval: config.Duration(time.Millisecond * 100),
 	}
 	cwd := openweather.NewCurrentWeatherData(client, config, log.Default())
 

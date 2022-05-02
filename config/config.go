@@ -1,4 +1,4 @@
-package openweather
+package config
 
 import (
 	"encoding/json"
@@ -6,12 +6,29 @@ import (
 )
 
 type Config struct {
-	CurrentWeatherData CurrentWeatherDataConfig
+	OpenWeather OpenWeather
 }
 
-type CurrentWeatherDataConfig struct {
+type Netatmo struct {
+	CurrentWeatherData OpenWeatherCurrentWeatherData
+}
+
+type NetatmoStationsData struct {
+	Interval Duration
+}
+
+type OpenWeather struct {
+	CurrentWeatherData OpenWeatherCurrentWeatherData
+}
+
+type OpenWeatherCurrentWeatherData struct {
 	Coords   []Coordinates
 	Interval Duration
+}
+
+type Coordinates struct {
+	Lon float64
+	Lat float64
 }
 
 // Duration embeds time.Duration and makes it more JSON-friendly.

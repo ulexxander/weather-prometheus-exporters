@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/ulexxander/open-weather-prometheus-exporter/config"
 )
 
 type gauge struct {
@@ -18,14 +19,14 @@ type gauge struct {
 
 type CurrentWeatherData struct {
 	client *Client
-	config *CurrentWeatherDataConfig
+	config *config.OpenWeatherCurrentWeatherData
 	log    *log.Logger
 	gauges []gauge
 }
 
 func NewCurrentWeatherData(
 	client *Client,
-	config *CurrentWeatherDataConfig,
+	config *config.OpenWeatherCurrentWeatherData,
 	log *log.Logger,
 ) *CurrentWeatherData {
 	const namespace = "open_weather"
@@ -134,7 +135,7 @@ func (cwd *CurrentWeatherData) Update() {
 	start := time.Now()
 
 	for _, coords := range cwd.config.Coords {
-		go func(coords Coordinates) {
+		go func(coords config.Coordinates) {
 			res, err := cwd.client.CurrentWeatherData(coords)
 			results <- result{res, err}
 		}(coords)

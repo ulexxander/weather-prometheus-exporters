@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+
+	"github.com/ulexxander/open-weather-prometheus-exporter/config"
 )
 
 const DefaultURL = "https://api.openweathermap.org/data/2.5"
@@ -33,11 +35,6 @@ func (e *ErrorResponse) Error() string {
 
 func (e *ErrorResponse) OK() bool {
 	return e.Message == ""
-}
-
-type Coordinates struct {
-	Lon float64
-	Lat float64
 }
 
 type CurrentWeatherDataResponse struct {
@@ -82,7 +79,7 @@ type CurrentWeatherDataResponse struct {
 	Name     string `json:"name"`
 }
 
-func (c *Client) CurrentWeatherData(coords Coordinates) (*CurrentWeatherDataResponse, error) {
+func (c *Client) CurrentWeatherData(coords config.Coordinates) (*CurrentWeatherDataResponse, error) {
 	query := url.Values{}
 	query.Set("lat", fmt.Sprint(coords.Lat))
 	query.Set("lon", fmt.Sprint(coords.Lon))

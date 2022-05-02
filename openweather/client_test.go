@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/ulexxander/open-weather-prometheus-exporter/config"
 	"github.com/ulexxander/open-weather-prometheus-exporter/openweather"
 	"github.com/ulexxander/open-weather-prometheus-exporter/testutil"
 )
@@ -26,7 +27,7 @@ func TestClient_Error(t *testing.T) {
 	}
 	resultChan := make(chan requestResult)
 	go func() {
-		cwd, err := client.CurrentWeatherData(openweather.Coordinates{
+		cwd, err := client.CurrentWeatherData(config.Coordinates{
 			Lat: 46.2389,
 			Lon: 14.3556,
 		})

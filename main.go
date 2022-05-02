@@ -12,6 +12,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/ulexxander/open-weather-prometheus-exporter/config"
 	"github.com/ulexxander/open-weather-prometheus-exporter/openweather"
 )
 
@@ -43,14 +44,14 @@ func run(log *log.Logger) error {
 	if err != nil {
 		return fmt.Errorf("reading config file: %w", err)
 	}
-	var config openweather.Config
+	var config config.Config
 	if err := json.Unmarshal(configJSON, &config); err != nil {
 		return fmt.Errorf("unmarshaling config: %w", err)
 	}
 
 	client := openweather.NewClient(appID)
 
-	cwd := openweather.NewCurrentWeatherData(client, &config.CurrentWeatherData, log)
+	cwd := openweather.NewCurrentWeatherData(client, &config.OpenWeather.CurrentWeatherData, log)
 	if err := prometheus.Register(cwd); err != nil {
 		return fmt.Errorf("registering current weather data collector: %w", err)
 	}
