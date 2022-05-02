@@ -3,19 +3,19 @@ package openweather_test
 import (
 	"log"
 	"os"
-	"reflect"
 	"sort"
 	"testing"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/stretchr/testify/require"
 	"github.com/ulexxander/open-weather-prometheus-exporter/openweather"
 )
 
 func TestCurrentWeatherData(t *testing.T) {
 	appID := os.Getenv("OPEN_WEATHER_APP_ID")
 	if appID == "" {
-		t.Fatalf("OPEN_WEATHER_APP_ID env variable must be set")
+		require.Fail(t, "OPEN_WEATHER_APP_ID env variable must be set")
 	}
 
 	client := openweather.NewClient(appID)
@@ -32,9 +32,8 @@ func TestCurrentWeatherData(t *testing.T) {
 	cwd := openweather.NewCurrentWeatherData(client, config, log.Default())
 
 	reg := prometheus.NewRegistry()
-	if err := reg.Register(cwd); err != nil {
-		t.Fatalf("error registering collector: %v", err)
-	}
+	err := reg.Register(cwd)
+	require.NoError(t, err)
 
 	cwd.Update()
 
@@ -51,40 +50,31 @@ func TestCurrentWeatherData(t *testing.T) {
 	}
 
 	mfs, err := reg.Gather()
-	if err != nil {
-		t.Fatalf("error gathering metrics: %v", err)
-	}
+	require.NoError(t, err)
 
 	var gatheredMetrics []string
 	for _, mf := range mfs {
 		gatheredMetrics = append(gatheredMetrics, mf.GetName())
 	}
 	sort.Strings(gatheredMetrics)
-	if !reflect.DeepEqual(gatheredMetrics, expectedMetrics) {
-		t.Fatalf("expected metrics %v, got: %v", expectedMetrics, gatheredMetrics)
-	}
+	require.Equal(t, expectedMetrics, gatheredMetrics)
 
 	for _, mf := range mfs {
 		metrics := mf.GetMetric()
-		if len(metrics) != 1 {
-			t.Fatalf("%s: expected 1 metric in family, got: %d", mf.GetName(), len(metrics))
-		}
+		require.Len(t, metrics, 1)
+
 		firstMetric := metrics[0]
 		labels := firstMetric.GetLabel()
-		if len(labels) != 2 {
-			t.Fatalf("%s: expected 2 labels, got: %d", mf.GetName(), len(labels))
-		}
+		require.Len(t, labels, 2)
+
 		expectedLabels := []string{"id", "name"}
 		var labelNames []string
 		for _, l := range labels {
 			labelNames = append(labelNames, l.GetName())
 		}
-		if !reflect.DeepEqual(labelNames, expectedLabels) {
-			t.Fatalf("%s: expected labels %v, got: %v", mf.GetName(), expectedLabels, labelNames)
-		}
+		require.Equal(t, expectedLabels, labelNames)
+
 		gauge := firstMetric.GetGauge()
-		if gauge.Value == nil {
-			t.Fatalf("%s: gauge value is nil", mf.GetName())
-		}
+		require.NotNil(t, gauge.Value)
 	}
 }

@@ -158,8 +158,6 @@ func (sd *StationsData) Collect(m chan<- prometheus.Metric) {
 func (sd *StationsData) Update() {
 	start := time.Now()
 
-	sd.log.Print("Fetching stations data")
-
 	stationsData, err := sd.client.StationsData()
 	if err != nil {
 		sd.log.Printf("Error fetching stations data: %s", err)
