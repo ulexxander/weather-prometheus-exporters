@@ -178,7 +178,6 @@ func (c *Client) Request(endpoint string, dest interface{}) error {
 	if err != nil {
 		return fmt.Errorf("reading response body: %w", err)
 	}
-	fmt.Println(string(resBody))
 
 	if err := json.Unmarshal(resBody, dest); err != nil {
 		return fmt.Errorf("unmarshaling response body: %w, content: %s", err, resBody)
