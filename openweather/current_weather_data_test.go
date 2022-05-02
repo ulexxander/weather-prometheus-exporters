@@ -36,9 +36,7 @@ func TestCurrentWeatherData(t *testing.T) {
 		t.Fatalf("error registering collector: %v", err)
 	}
 
-	if err := cwd.Update(); err != nil {
-		t.Fatalf("error updating: %v", err)
-	}
+	cwd.Update()
 
 	expectedMetrics := []string{
 		"open_weather_clouds_all",

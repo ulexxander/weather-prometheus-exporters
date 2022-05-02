@@ -14,11 +14,6 @@ type CurrentWeatherDataConfig struct {
 	Interval Duration
 }
 
-type Coordinates struct {
-	Lon float64
-	Lat float64
-}
-
 // Duration embeds time.Duration and makes it more JSON-friendly.
 // Instead of marshaling and unmarshaling as int64 it uses strings, like "5m" or "0.5s".
 type Duration time.Duration
