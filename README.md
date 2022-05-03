@@ -6,8 +6,8 @@ Export OpenWeather and Netatmo weather data into Prometheus.
 
 Supported APIs:
 
-- [Netatmo Stations Data](https://openweathermap.org/current)
-- [OpenWeather Current Weather Data](https://dev.netatmo.com/apidocumentation/weather#getstationsdata)
+- [Netatmo Stations Data](https://dev.netatmo.com/apidocumentation/weather#getstationsdata)
+- [OpenWeather Current Weather Data](https://openweathermap.org/current)
 
 Netatmo Grafana dashboard:
 
