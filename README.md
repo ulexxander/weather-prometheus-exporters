@@ -17,6 +17,10 @@ OpenWeather Grafana dashboard:
 
 ![OpenWeather Grafana dashboard](./grafana-dashboard-open-weather.png)
 
+Netatmo and OpenWeather together Grafana dashboard:
+
+![Netatmo VS OpenWeather Grafana dashboard](./grafana-dashboard-netatmo-vs-open-weather.png)
+
 ## Getting started
 
 ```sh
